@@ -18,8 +18,12 @@ import java.net.Socket;
 @Slf4j
 public class WebSocketConnection implements Runnable {
 
+    private enum State { HANDSHAKING, AUTHENTICATING, OPEN, CLOSED }
+
     private final Socket socket;
     private OutputStream out;
+
+    private State state = State.HANDSHAKING;
 
     public WebSocketConnection(Socket socket) {
         this.socket = socket;
@@ -27,11 +31,21 @@ public class WebSocketConnection implements Runnable {
 
     @Override
     public void run() {
-        // perform handshake
         try {
             performHandshake();
+            runReadLoop();
         } catch (Exception e) {
             log.error("Error occurred while handling WebSocket connection: {}", e.getMessage(), e);
+        } finally {
+            close();
+        }
+    }
+
+    private void runReadLoop() throws IOException {
+        InputStream in = socket.getInputStream();
+        while (state != State.CLOSED) {
+            // TODO: read and process WebSocket frames
+
         }
     }
 
@@ -49,8 +63,18 @@ public class WebSocketConnection implements Runnable {
         }
 
         HandShakeResponder.respond(request, out);
+        state = State.AUTHENTICATING;
 
-        log.info("WebSocket handshake completed successfully");
+        log.info("WebSocket handshake completed successfully from {}", remoteAddr());
+    }
+
+    private void close() {
+        // TODO: close the connection
+        try { socket.close(); } catch (IOException ignored) {}
+    }
+
+    private String remoteAddr() {
+        return socket.isConnected() ? socket.getRemoteSocketAddress().toString() : "unknown";
     }
 
 }
