@@ -1,0 +1,4 @@
+app:
+  websocket:
+    port: 8081
+    thread-pool-size: 100

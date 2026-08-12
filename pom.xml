@@ -11,13 +11,22 @@
 	<groupId>com.truongmg</groupId>
 	<artifactId>realtime-messaging</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<description>Real-time 1-to-1 messaging backend with custom RFC 6455 WebSocket implementation</description>
+
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
