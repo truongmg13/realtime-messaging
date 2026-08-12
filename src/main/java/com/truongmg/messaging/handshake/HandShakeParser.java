@@ -27,8 +27,6 @@ public class HandShakeParser {
 
     public static HandShakeParser parse(InputStream in) throws IOException {
         String requestLine = readLine(in);
-        log.info("Parsed request line: {}", requestLine);
-
         String[] parts = requestLine.split(" ", 3);
         if (parts.length < 2) {
             throw new IllegalArgumentException("Malformed request line: " + requestLine);
@@ -42,7 +40,6 @@ public class HandShakeParser {
         Map<String, String> headers = new HashMap<>();
         String line;
         while (!(line = readLine(in)).isEmpty()) {
-            log.info("Found header line: {}", line);
             int colon = line.indexOf(":");
             if (colon > 0) {
                 String name = line.substring(0, colon).trim().toLowerCase();
@@ -104,4 +101,7 @@ public class HandShakeParser {
         return sb.toString();
     }
 
+    public String getWebSocketKey() {
+        return headers.get("sec-websocket-key");
+    }
 }
