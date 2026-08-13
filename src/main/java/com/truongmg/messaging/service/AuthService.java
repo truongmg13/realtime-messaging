@@ -5,6 +5,7 @@ import com.truongmg.messaging.dto.RegisterRequest;
 import com.truongmg.messaging.exception.ConflictException;
 import com.truongmg.messaging.model.User;
 import com.truongmg.messaging.repository.UserRepository;
+import com.truongmg.messaging.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
         String username = request.username();
@@ -36,7 +38,7 @@ public class AuthService {
 
     private AuthResponse buildResponse(User user) {
         // generate token
-        String token = "";
+        String token = jwtUtil.generateToken(user.getId());
         return new AuthResponse(token, user.getId(), user.getUsername(), user.getDisplayName());
     }
 
