@@ -1,6 +1,7 @@
 package com.truongmg.messaging.websocket;
 
 import com.truongmg.messaging.frame.FrameDecoder;
+import com.truongmg.messaging.frame.FrameEncoder;
 import com.truongmg.messaging.frame.WebSocketFrame;
 import com.truongmg.messaging.handshake.HandShakeParser;
 import com.truongmg.messaging.handshake.HandShakeResponder;
@@ -30,6 +31,7 @@ public class WebSocketConnection implements Runnable {
     private OutputStream out;
 
     private final FrameDecoder frameDecoder = new FrameDecoder();
+    private final FrameEncoder frameEncoder = new FrameEncoder();
 
     private State state = State.HANDSHAKING;
 
@@ -68,9 +70,9 @@ public class WebSocketConnection implements Runnable {
 
     private void handleText(WebSocketFrame frame) {
         if (state == State.CLOSED) return;
-        String msg = new String(frame.getPayload(), StandardCharsets.UTF_8);
-        log.info("received text frame from {}: {}", remoteAddr(), msg);
-        protocolHandler.handleMessage(msg);
+        String json = new String(frame.getPayload(), StandardCharsets.UTF_8);
+        log.info("received text frame from {}: {}", remoteAddr(), json);
+        protocolHandler.handleMessage(this, json);
     }
 
     private void performHandshake() throws IOException {
@@ -93,6 +95,11 @@ public class WebSocketConnection implements Runnable {
         state = State.AUTHENTICATING;
 
         log.info("WebSocket handshake completed successfully from {}", remoteAddr());
+    }
+
+    public void send(String json) throws IOException {
+        // encode before sending response to client
+        frameEncoder.encode(WebSocketFrame.text(json), out);
     }
 
     private void close() {
