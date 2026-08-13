@@ -26,7 +26,6 @@ import java.util.UUID;
 @Slf4j
 public class WebSocketConnection implements Runnable {
 
-
     private enum State { HANDSHAKING, AUTHENTICATING, OPEN, CLOSED }
 
     private final Socket socket;
@@ -147,6 +146,10 @@ public class WebSocketConnection implements Runnable {
 
     public boolean isAuthenticated() {
         return state == State.OPEN && authenticatedUserId != null;
+    }
+
+    public UUID getAuthenticatedUserId() {
+        return this.authenticatedUserId;
     }
 
 }

@@ -17,8 +17,8 @@ public class SessionRegistry {
 
     private final ConcurrentHashMap<UUID, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
-
     public void register(UUID userId, WebSocketSession session) {
-
+        sessions.put(userId, session);
+        log.info("Session registered for user {}, total online: {}", userId, sessions.size());
     }
 }

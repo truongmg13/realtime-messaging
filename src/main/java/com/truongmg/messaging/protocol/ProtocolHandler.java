@@ -2,7 +2,9 @@ package com.truongmg.messaging.protocol;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.truongmg.messaging.model.Message;
 import com.truongmg.messaging.security.JwtUtil;
+import com.truongmg.messaging.service.MessageService;
 import com.truongmg.messaging.session.SessionRegistry;
 import com.truongmg.messaging.session.WebSocketSession;
 import com.truongmg.messaging.websocket.WebSocketConnection;
@@ -21,6 +23,7 @@ public class ProtocolHandler {
 
     private final JwtUtil jwtUtil;
     private final SessionRegistry sessionRegistry;
+    private final MessageService messageService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void handleMessage(WebSocketConnection connection, String json) {
@@ -79,8 +82,31 @@ public class ProtocolHandler {
 
     private void handleSend(WebSocketConnection connection, Envelope envelope) {
         // check if user is authenticated and connection is open
+        if (!connection.isAuthenticated()) {
+            sendError(connection, "NOT_AUTHENTICATED", "Send AUTH first");
+            return;
+        }
 
-        // validate recipientId content
+        // validate recipientId & content
+        String content = envelope.content();
+        if (envelope.recipientId() == null || content == null || content.isBlank()) {
+            sendError(connection, "INVALID_PAYLOAD", "recipientId and content are required");
+            return;
+        }
+
+        UUID senderId;
+        UUID recipientId;
+        try {
+            senderId = connection.getAuthenticatedUserId();
+            recipientId = UUID.fromString(envelope.recipientId());
+        } catch (IllegalArgumentException e) {
+            sendError(connection, "INVALID_PAYLOAD", "recipientId must be a valid UUID");
+            return;
+        }
+
+        // Save message
+        Message message;
+        message = messageService.save(senderId, recipientId, content);
 
         // try to send to client first
         Map<String, String> payload = Map.of("type", "MESSAGE", "content", "haha");
