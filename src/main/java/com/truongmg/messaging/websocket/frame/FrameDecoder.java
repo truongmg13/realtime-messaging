@@ -1,4 +1,4 @@
-package com.truongmg.messaging.frame;
+package com.truongmg.messaging.websocket.frame;
 
 import lombok.extern.slf4j.Slf4j;
 

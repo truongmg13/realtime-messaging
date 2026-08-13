@@ -1,4 +1,4 @@
-package com.truongmg.messaging.protocol;
+package com.truongmg.messaging.websocket.protocol;
 
 /**
  * Flat JSON envelope for all client->server WebSocket messages.

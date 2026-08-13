@@ -1,6 +1,6 @@
-package com.truongmg.messaging.websocket;
+package com.truongmg.messaging.websocket.server;
 
-import com.truongmg.messaging.protocol.ProtocolHandler;
+import com.truongmg.messaging.websocket.protocol.ProtocolHandler;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

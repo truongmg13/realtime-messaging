@@ -1,4 +1,4 @@
-package com.truongmg.messaging.protocol;
+package com.truongmg.messaging.websocket.protocol;
 
 /**
  * Discriminator field for every JSON envelope exchanged over WebSocket.

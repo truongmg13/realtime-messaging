@@ -1,4 +1,4 @@
-package com.truongmg.messaging.frame;
+package com.truongmg.messaging.websocket.frame;
 
 import java.io.IOException;
 import java.io.OutputStream;

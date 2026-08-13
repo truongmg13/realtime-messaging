@@ -1,11 +1,11 @@
-package com.truongmg.messaging.websocket;
+package com.truongmg.messaging.websocket.server;
 
-import com.truongmg.messaging.frame.FrameDecoder;
-import com.truongmg.messaging.frame.FrameEncoder;
-import com.truongmg.messaging.frame.WebSocketFrame;
-import com.truongmg.messaging.handshake.HandShakeParser;
-import com.truongmg.messaging.handshake.HandShakeResponder;
-import com.truongmg.messaging.protocol.ProtocolHandler;
+import com.truongmg.messaging.websocket.frame.FrameDecoder;
+import com.truongmg.messaging.websocket.frame.FrameEncoder;
+import com.truongmg.messaging.websocket.frame.WebSocketFrame;
+import com.truongmg.messaging.websocket.handshake.HandShakeParser;
+import com.truongmg.messaging.websocket.handshake.HandShakeResponder;
+import com.truongmg.messaging.websocket.protocol.ProtocolHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.truongmg.messaging.session;
+package com.truongmg.messaging.websocket.session;
 
 import java.util.UUID;
 

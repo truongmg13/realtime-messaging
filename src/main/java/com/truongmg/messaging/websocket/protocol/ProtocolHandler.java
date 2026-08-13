@@ -1,13 +1,13 @@
-package com.truongmg.messaging.protocol;
+package com.truongmg.messaging.websocket.protocol;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truongmg.messaging.model.Message;
 import com.truongmg.messaging.security.JwtUtil;
 import com.truongmg.messaging.service.MessageService;
-import com.truongmg.messaging.session.SessionRegistry;
-import com.truongmg.messaging.session.WebSocketSession;
-import com.truongmg.messaging.websocket.WebSocketConnection;
+import com.truongmg.messaging.websocket.session.SessionRegistry;
+import com.truongmg.messaging.websocket.session.WebSocketSession;
+import com.truongmg.messaging.websocket.server.WebSocketConnection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

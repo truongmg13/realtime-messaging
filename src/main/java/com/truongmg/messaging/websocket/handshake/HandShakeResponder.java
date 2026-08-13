@@ -1,4 +1,4 @@
-package com.truongmg.messaging.handshake;
+package com.truongmg.messaging.websocket.handshake;
 
 import lombok.extern.slf4j.Slf4j;
 

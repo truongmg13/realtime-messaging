@@ -1,4 +1,4 @@
-package com.truongmg.messaging.session;
+package com.truongmg.messaging.websocket.session;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
