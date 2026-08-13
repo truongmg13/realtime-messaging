@@ -1,4 +1,4 @@
-src/main/java/com/truongmg/messaging/websocket/WebSocketConnection.javapackage com.truongmg.messaging.websocket;
+package com.truongmg.messaging.websocket;
 
 import com.truongmg.messaging.frame.FrameDecoder;
 import com.truongmg.messaging.frame.WebSocketFrame;
