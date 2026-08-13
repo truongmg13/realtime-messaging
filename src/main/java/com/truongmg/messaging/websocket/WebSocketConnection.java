@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Manages full lifecycle of a single WebSocket Connection
@@ -27,6 +29,7 @@ public class WebSocketConnection implements Runnable {
 
     private final Socket socket;
     private final ProtocolHandler protocolHandler;
+    private final long authTimeout;
 
     private OutputStream out;
 
@@ -35,9 +38,10 @@ public class WebSocketConnection implements Runnable {
 
     private State state = State.HANDSHAKING;
 
-    public WebSocketConnection(Socket socket, ProtocolHandler protocolHandler) {
+    WebSocketConnection(Socket socket, ProtocolHandler protocolHandler, long authTimeout) {
         this.socket = socket;
         this.protocolHandler = protocolHandler;
+        this.authTimeout = authTimeout;
     }
 
     @Override
@@ -62,15 +66,15 @@ public class WebSocketConnection implements Runnable {
 
     private void handleFrame(WebSocketFrame frame) {
         // Only support Text as of now
-        switch (frame.getOpcode()) {
+        switch (frame.opcode()) {
             case WebSocketFrame.OP_TEXT -> handleText(frame);
-            default -> log.warn("unknown opcode ox{} from {}", Integer.toHexString(frame.getOpcode()), remoteAddr());
+            default -> log.warn("unknown opcode ox{} from {}", Integer.toHexString(frame.opcode()), remoteAddr());
         }
     }
 
     private void handleText(WebSocketFrame frame) {
         if (state == State.CLOSED) return;
-        String json = new String(frame.getPayload(), StandardCharsets.UTF_8);
+        String json = new String(frame.payload(), StandardCharsets.UTF_8);
         log.info("received text frame from {}: {}", remoteAddr(), json);
         protocolHandler.handleMessage(this, json);
     }
@@ -95,6 +99,28 @@ public class WebSocketConnection implements Runnable {
         state = State.AUTHENTICATING;
 
         log.info("WebSocket handshake completed successfully from {}", remoteAddr());
+        scheduleAuthTimeout();
+    }
+
+    private void scheduleAuthTimeout() {
+        Timer timer = new Timer(true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (state == State.AUTHENTICATING) {
+                    log.warn("Authentication timed out from {}", remoteAddr());
+                    try { sendFrame(WebSocketFrame.close(4001)); } catch (IOException ignored) {}
+                    close();
+                }
+
+            }
+        }, authTimeout);
+    }
+
+    private void sendFrame(WebSocketFrame frame) throws IOException {
+        if (out != null) {
+            frameEncoder.encode(frame, out);
+        }
     }
 
     public void send(String json) throws IOException {

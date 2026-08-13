@@ -27,6 +27,9 @@ public class RawWebSocketServer implements ApplicationRunner {
     @Value("${app.websocket.thread-pool-size}")
     private int threadPoolSize;
 
+    @Value("${app.websocket.auth-timeout}")
+    private long authTimeout;
+
     private ServerSocket serverSocket;
     private ExecutorService connectionPool;
     private Thread acceptThread;
@@ -66,7 +69,7 @@ public class RawWebSocketServer implements ApplicationRunner {
                 log.info("Accepting connection");
                 Socket socket = serverSocket.accept();
 
-                WebSocketConnection connection = new WebSocketConnection(socket, protocolHandler);
+                WebSocketConnection connection = new WebSocketConnection(socket, protocolHandler, authTimeout);
                 connectionPool.submit(connection);
 
             } catch (IOException e) {

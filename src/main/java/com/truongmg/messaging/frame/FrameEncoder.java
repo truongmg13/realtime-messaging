@@ -16,10 +16,10 @@ public class FrameEncoder {
      *
      */
     public void encode(WebSocketFrame frame, OutputStream out) throws IOException {
-        byte[] payload = frame.getPayload();
+        byte[] payload = frame.payload();
 
         // Byte 0: FIN=1, RSV1-3=0, Opcode
-        out.write(0x80 | (frame.getOpcode() & 0x0F));
+        out.write(0x80 | (frame.opcode() & 0x0F));
 
         // Byte 1 onward: MASK=0, then payload length
         int len = payload.length;

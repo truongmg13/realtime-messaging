@@ -10,6 +10,12 @@ package com.truongmg.messaging.protocol;
 public enum MessageType {
 
     /**
+     * First message after handshake.
+     * Payload: { "type": "AUTH", "token": "<jwt>" }
+     */
+    AUTH,
+
+    /**
      * Send a message to another user.
      * Payload: { "type": "SEND", "recipientId": "<uuid>", "content": "<text>" }
      */

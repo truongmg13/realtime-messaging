@@ -34,9 +34,14 @@ public class ProtocolHandler {
         }
 
         switch (type) {
+            case AUTH -> handleAuth(connection, envelope);
             case SEND -> handleSend(connection, envelope);
             default -> sendError(connection, "UNKNOWN_TYPE", "Unsupported type: " + type);
         }
+
+    }
+
+    private void handleAuth(WebSocketConnection connection, Envelope envelope) {
 
     }
 

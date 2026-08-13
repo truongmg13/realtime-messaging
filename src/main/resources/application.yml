@@ -2,6 +2,7 @@ app:
   websocket:
     port: 8081
     thread-pool-size: 100
+    auth-timeout: 10000       # 10 seconds to send AUTH after connecting
 
 logging:
   level:
