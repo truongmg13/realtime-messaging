@@ -106,10 +106,16 @@ public class ProtocolHandler {
 
         // Save message
         Message message;
-        message = messageService.save(senderId, recipientId, content);
+        try {
+            message = messageService.save(senderId, recipientId, content);
+        } catch (Exception e) {
+            log.warn("Failed to save message from {} to {}: {}", senderId, recipientId, e.getMessage());
+            sendError(connection, "SEND_FAILED", e.getMessage());
+            return;
+        }
 
         // try to send to client first
-        Map<String, String> payload = Map.of("type", "MESSAGE", "content", "haha");
+        Map<String, String> payload = Map.of("type", "MESSAGE", "content", message.getContent());
         sendJson(connection, payload);
 
     }
