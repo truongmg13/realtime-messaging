@@ -34,7 +34,8 @@ public class AuthService {
 
     private AuthResponse buildResponse(User user) {
         // generate token
-        return null;
+        String token = "";
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getDisplayName());
     }
 
 }
