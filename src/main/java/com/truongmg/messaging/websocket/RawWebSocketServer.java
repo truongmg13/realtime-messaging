@@ -1,5 +1,6 @@
 package com.truongmg.messaging.websocket;
 
+import com.truongmg.messaging.protocol.ProtocolHandler;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class RawWebSocketServer implements ApplicationRunner {
 
+    private final ProtocolHandler protocolHandler;
+
     @Value("${app.websocket.port}")
     private int port;
 
@@ -28,6 +31,10 @@ public class RawWebSocketServer implements ApplicationRunner {
     private ExecutorService connectionPool;
     private Thread acceptThread;
     private final AtomicBoolean running = new AtomicBoolean(false);
+
+    public RawWebSocketServer(ProtocolHandler protocolHandler) {
+        this.protocolHandler = protocolHandler;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -59,7 +66,7 @@ public class RawWebSocketServer implements ApplicationRunner {
                 log.info("Accepting connection");
                 Socket socket = serverSocket.accept();
 
-                WebSocketConnection connection = new WebSocketConnection(socket);
+                WebSocketConnection connection = new WebSocketConnection(socket, protocolHandler);
                 connectionPool.submit(connection);
 
             } catch (IOException e) {

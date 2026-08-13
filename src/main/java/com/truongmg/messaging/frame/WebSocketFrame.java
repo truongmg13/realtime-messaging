@@ -9,6 +9,8 @@ import lombok.Getter;
 @Getter
 public class WebSocketFrame {
 
+    public static final int OP_TEXT = 0x1;
+
     private final boolean fin;
     private final int opcode;
     private final byte[] payload;

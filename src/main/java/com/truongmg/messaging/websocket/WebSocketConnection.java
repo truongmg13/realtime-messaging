@@ -4,6 +4,7 @@ import com.truongmg.messaging.frame.FrameDecoder;
 import com.truongmg.messaging.frame.WebSocketFrame;
 import com.truongmg.messaging.handshake.HandShakeParser;
 import com.truongmg.messaging.handshake.HandShakeResponder;
+import com.truongmg.messaging.protocol.ProtocolHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -24,14 +25,17 @@ public class WebSocketConnection implements Runnable {
     private enum State { HANDSHAKING, AUTHENTICATING, OPEN, CLOSED }
 
     private final Socket socket;
+    private final ProtocolHandler protocolHandler;
+
     private OutputStream out;
 
     private final FrameDecoder frameDecoder = new FrameDecoder();
 
     private State state = State.HANDSHAKING;
 
-    public WebSocketConnection(Socket socket) {
+    public WebSocketConnection(Socket socket, ProtocolHandler protocolHandler) {
         this.socket = socket;
+        this.protocolHandler = protocolHandler;
     }
 
     @Override
@@ -50,7 +54,23 @@ public class WebSocketConnection implements Runnable {
         InputStream in = socket.getInputStream();
         while (state != State.CLOSED) {
             WebSocketFrame frame = frameDecoder.decode(in);
+            handleFrame(frame);
         }
+    }
+
+    private void handleFrame(WebSocketFrame frame) {
+        // Only support Text as of now
+        switch (frame.getOpcode()) {
+            case WebSocketFrame.OP_TEXT -> handleText(frame);
+            default -> log.warn("unknown opcode ox{} from {}", Integer.toHexString(frame.getOpcode()), remoteAddr());
+        }
+    }
+
+    private void handleText(WebSocketFrame frame) {
+        if (state == State.CLOSED) return;
+        String msg = new String(frame.getPayload(), StandardCharsets.UTF_8);
+        log.info("received text frame from {}: {}", remoteAddr(), msg);
+        protocolHandler.handleMessage(msg);
     }
 
     private void performHandshake() throws IOException {
