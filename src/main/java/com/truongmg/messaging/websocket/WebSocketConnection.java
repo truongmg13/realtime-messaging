@@ -1,13 +1,17 @@
-package com.truongmg.messaging.websocket;
+src/main/java/com/truongmg/messaging/websocket/WebSocketConnection.javapackage com.truongmg.messaging.websocket;
 
+import com.truongmg.messaging.frame.FrameDecoder;
+import com.truongmg.messaging.frame.WebSocketFrame;
 import com.truongmg.messaging.handshake.HandShakeParser;
 import com.truongmg.messaging.handshake.HandShakeResponder;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Manages full lifecycle of a single WebSocket Connection
@@ -23,6 +27,8 @@ public class WebSocketConnection implements Runnable {
     private final Socket socket;
     private OutputStream out;
 
+    private final FrameDecoder frameDecoder = new FrameDecoder();
+
     private State state = State.HANDSHAKING;
 
     public WebSocketConnection(Socket socket) {
@@ -35,7 +41,7 @@ public class WebSocketConnection implements Runnable {
             performHandshake();
             runReadLoop();
         } catch (Exception e) {
-            log.error("Error occurred while handling WebSocket connection: {}", e.getMessage(), e);
+            log.error("Unexpected error in connection ({}): {}", remoteAddr(), e.getMessage(), e);
         } finally {
             close();
         }
@@ -44,8 +50,7 @@ public class WebSocketConnection implements Runnable {
     private void runReadLoop() throws IOException {
         InputStream in = socket.getInputStream();
         while (state != State.CLOSED) {
-            // TODO: read and process WebSocket frames
-
+            WebSocketFrame frame = frameDecoder.decode(in);
         }
     }
 
@@ -58,6 +63,9 @@ public class WebSocketConnection implements Runnable {
         try {
             request = HandShakeParser.parse(in);
         } catch (IllegalArgumentException e) {
+            out.write(("HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n")
+                    .getBytes(StandardCharsets.US_ASCII));
+            out.flush();
             // write to output stream to response back to client
             throw new IOException("Rejected non-WebSocket request: " + e.getMessage());
         }

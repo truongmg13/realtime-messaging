@@ -45,6 +45,8 @@ public class RawWebSocketServer implements ApplicationRunner {
             acceptThread = new Thread(this::acceptLoop, "ws-accept");
             acceptThread.setDaemon(true);
             acceptThread.start();
+
+            log.info("WebSocket server started on port {} with thread pool size {}", port, threadPoolSize);
         } catch (IOException ex) {
             log.error("Failed to start Websocket server on port {}: {}", port, ex.getMessage());
         }
