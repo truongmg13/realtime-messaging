@@ -45,6 +45,11 @@ public class ProtocolHandler {
     }
 
     private void handleAuth(WebSocketConnection connection, Envelope envelope) {
+        if (connection.isAuthenticated()) {
+            sendError(connection, "ALREADY_AUTH", "Already authenticated");
+            return;
+        }
+
         String token = envelope.token();
         if (token == null || token.isBlank()) {
             sendError(connection, "AUTH_FAILED", "Token is required");

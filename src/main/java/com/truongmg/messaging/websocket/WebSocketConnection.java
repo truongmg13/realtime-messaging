@@ -145,5 +145,8 @@ public class WebSocketConnection implements Runnable {
         this.state = State.OPEN;
     }
 
+    public boolean isAuthenticated() {
+        return state == State.OPEN && authenticatedUserId != null;
+    }
 
 }
