@@ -3,6 +3,8 @@ package com.truongmg.messaging.protocol;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truongmg.messaging.security.JwtUtil;
+import com.truongmg.messaging.session.SessionRegistry;
+import com.truongmg.messaging.session.WebSocketSession;
 import com.truongmg.messaging.websocket.WebSocketConnection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class ProtocolHandler {
 
     private final JwtUtil jwtUtil;
+    private final SessionRegistry sessionRegistry;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void handleMessage(WebSocketConnection connection, String json) {
@@ -65,6 +68,9 @@ public class ProtocolHandler {
             return;
         }
 
+        // register session
+        WebSocketSession session = new WebSocketSession(userId);
+        sessionRegistry.register(userId, session);
         connection.updateAuthDetails(userId);
 
         sendJson(connection, Map.of("type", "AUTH_OK", "userId", userId.toString()));
