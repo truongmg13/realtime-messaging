@@ -7,6 +7,7 @@ import com.truongmg.messaging.model.User;
 import com.truongmg.messaging.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthResponse register(RegisterRequest request) {
         String username = request.username();
@@ -24,7 +26,7 @@ public class AuthService {
 
         User user = new User();
         user.setUsername(username);
-        user.setPasswordHash(request.password());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setDisplayName(request.displayName());
         user = userRepository.save(user);
 
