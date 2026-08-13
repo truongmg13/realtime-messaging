@@ -1,6 +1,7 @@
 package com.truongmg.messaging.controller;
 
 import com.truongmg.messaging.dto.AuthResponse;
+import com.truongmg.messaging.dto.LoginRequest;
 import com.truongmg.messaging.dto.RegisterRequest;
 import com.truongmg.messaging.service.AuthService;
 import jakarta.validation.Valid;
@@ -19,6 +20,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 
 }

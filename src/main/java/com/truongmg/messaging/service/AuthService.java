@@ -1,8 +1,10 @@
 package com.truongmg.messaging.service;
 
 import com.truongmg.messaging.dto.AuthResponse;
+import com.truongmg.messaging.dto.LoginRequest;
 import com.truongmg.messaging.dto.RegisterRequest;
 import com.truongmg.messaging.exception.ConflictException;
+import com.truongmg.messaging.exception.UnauthorizedException;
 import com.truongmg.messaging.model.User;
 import com.truongmg.messaging.repository.UserRepository;
 import com.truongmg.messaging.security.JwtUtil;
@@ -36,10 +38,20 @@ public class AuthService {
         return buildResponse(user);
     }
 
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new UnauthorizedException("Invalid credentials");
+        }
+
+        log.info("User logged in: {} ({})", user.getUsername(), user.getId());
+        return buildResponse(user);
+    }
+
     private AuthResponse buildResponse(User user) {
-        // generate token
         String token = jwtUtil.generateToken(user.getId());
         return new AuthResponse(token, user.getId(), user.getUsername(), user.getDisplayName());
     }
-
 }
