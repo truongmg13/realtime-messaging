@@ -1,5 +1,9 @@
 package com.truongmg.messaging.frame;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -16,12 +20,61 @@ import java.io.InputStream;
  *   Client -> Server frames MUST be masked. Server -> Client frames MUST NOT be masked.
  *   This decoder handles both.
  */
+@Slf4j
 public class FrameDecoder {
 
-    public WebSocketFrame decode(InputStream in) {
+    public WebSocketFrame decode(InputStream in) throws IOException {
+        int byte0 = readByte(in);
+        boolean fin = (byte0 & 0x80) != 0;
+        int opcode = byte0 & 0x0F;
 
+        int byte1 = readByte(in);
+        boolean masked = (byte1 & 0x80) != 0;
+        long payloadLength = byte1 & 0x7F;
 
-        return new WebSocketFrame();
+        if (payloadLength == 126) {
+            // Next 2 bytes are 16-bit unsigned length
+            payloadLength = ((long) readByte(in) << 8) | readByte(in);
+        } else if (payloadLength == 127) {
+            // Next 8 bytes are 64-bit unsigned length
+            payloadLength = 0;
+            for (int i = 0; i < 8; i++) {
+                payloadLength = (payloadLength << 8) | readByte(in);
+            }
+        }
+
+        byte[] maskKey = null;
+        if (masked) {
+            maskKey = readBytes(in, 4);
+        }
+
+        byte[] payload = readBytes(in, (int) payloadLength);
+
+        if (masked) {
+            for (int i = 0; i < payload.length; i++) {
+                payload[i] ^= maskKey[i % 4];
+            }
+        }
+
+        return new WebSocketFrame(fin, opcode, payload);
+    }
+
+    private int readByte(InputStream in) throws IOException {
+        int b = in.read();
+        if (b == -1) throw new EOFException("Stream closed");
+        return b;
+    }
+
+    private byte[] readBytes(InputStream in, int count) throws IOException {
+        if (count == 0) return new byte[0];
+        byte[] buf = new byte[count];
+        int read = 0;
+        while (read < count) {
+            int n = in.read(buf, read, count - read);
+            if (n == -1) throw new EOFException("Unexpected end of stream");
+            read += n;
+        }
+        return buf;
     }
 
 }
