@@ -23,18 +23,19 @@ public class ProtocolHandler {
             envelope = objectMapper.readValue(json, Envelope.class);
             log.info("Envelop: {}", envelope);
         } catch (JsonProcessingException e) {
-            sendError("");
+            sendError(connection, "INVALID_JSON", "Could not parse message envelope");
             return;
         }
 
-        if (envelope.type() == null) {
-            sendError("");
+        MessageType type = envelope.type();
+        if (type == null) {
+            sendError(connection, "MISSING_TYPE", "Message type is required");
             return;
         }
 
-        switch (envelope.type()) {
+        switch (type) {
             case SEND -> handleSend(connection, envelope);
-            default -> sendError("");
+            default -> sendError(connection, "UNKNOWN_TYPE", "Unsupported type: " + type);
         }
 
     }
@@ -46,16 +47,23 @@ public class ProtocolHandler {
 
         // try to send to client first
         Map<String, String> payload = Map.of("type", "MESSAGE", "content", "haha");
-        try {
-            connection.send(objectMapper.writeValueAsString(payload));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        sendJson(connection, payload);
 
     }
 
-    private void sendError(String msg) {
-        // TODO: implement sending error msg back to client
+    private void sendJson(WebSocketConnection connection, Map<String, String> payload) {
+        try {
+            connection.send(objectMapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            log.debug("Could not write to connection: {}", e.getMessage());
+        }
+    }
+
+    private void sendError(WebSocketConnection connection, String code, String reason) {
+        sendJson(
+            connection,
+            Map.of("type", "ERROR", "code", code, "reason", reason)
+        );
     }
 
 }
