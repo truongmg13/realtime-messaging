@@ -19,6 +19,8 @@ public class HandShakeResponder {
     // Globally Unique Identifier
     private static final String GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
+    private static final String CRLF = "\r\n";
+
     /**
      * Computes the accept key and writes the 101 response
      * @param request
@@ -27,12 +29,11 @@ public class HandShakeResponder {
     public static void respond(HandShakeParser request, OutputStream out) throws IOException {
         String acceptKey = computeAcceptKey(request.getWebSocketKey());
 
-        String response = """
-            HTTP/1.1 101 Switching Protocols\r
-            Upgrade: websocket\r
-            Connection: Upgrade\r
-            Sec-WebSocket-Accept: %s\r
-            """.formatted(acceptKey);
+        String response = "HTTP/1.1 101 Switching Protocols" + CRLF
+            + "Upgrade: websocket" + CRLF
+            + "Connection: Upgrade" + CRLF
+            + "Sec-WebSocket-Accept: " + acceptKey + CRLF
+            + CRLF;
 
         log.info("Sending handshake response:\n{}", response);
 
