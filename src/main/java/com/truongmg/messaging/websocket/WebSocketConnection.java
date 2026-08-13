@@ -15,6 +15,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 /**
  * Manages full lifecycle of a single WebSocket Connection
@@ -25,18 +26,19 @@ import java.util.TimerTask;
 @Slf4j
 public class WebSocketConnection implements Runnable {
 
+
     private enum State { HANDSHAKING, AUTHENTICATING, OPEN, CLOSED }
 
     private final Socket socket;
     private final ProtocolHandler protocolHandler;
     private final long authTimeout;
 
-    private OutputStream out;
-
     private final FrameDecoder frameDecoder = new FrameDecoder();
     private final FrameEncoder frameEncoder = new FrameEncoder();
 
     private State state = State.HANDSHAKING;
+    private UUID authenticatedUserId;
+    private OutputStream out;
 
     WebSocketConnection(Socket socket, ProtocolHandler protocolHandler, long authTimeout) {
         this.socket = socket;
@@ -136,5 +138,12 @@ public class WebSocketConnection implements Runnable {
     private String remoteAddr() {
         return socket.isConnected() ? socket.getRemoteSocketAddress().toString() : "unknown";
     }
+
+    // -- Public API -----------
+    public void updateAuthDetails(UUID userId) {
+        this.authenticatedUserId = userId;
+        this.state = State.OPEN;
+    }
+
 
 }

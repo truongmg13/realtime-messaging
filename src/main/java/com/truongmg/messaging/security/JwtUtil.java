@@ -1,5 +1,6 @@
 package com.truongmg.messaging.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -37,5 +38,14 @@ public class JwtUtil {
     private SecretKey signingKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public UUID extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(signingKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return UUID.fromString(claims.getSubject());
     }
 }

@@ -2,6 +2,7 @@ package com.truongmg.messaging.protocol;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.truongmg.messaging.security.JwtUtil;
 import com.truongmg.messaging.websocket.WebSocketConnection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,12 +10,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ProtocolHandler {
 
+    private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void handleMessage(WebSocketConnection connection, String json) {
@@ -42,7 +45,25 @@ public class ProtocolHandler {
     }
 
     private void handleAuth(WebSocketConnection connection, Envelope envelope) {
+        String token = envelope.token();
+        if (token == null || token.isBlank()) {
+            sendError(connection, "AUTH_FAILED", "Token is required");
+            return;
+        }
 
+        UUID userId;
+        try {
+            userId = jwtUtil.extractUserId(token);
+        } catch (Exception e) {
+            log.debug("WebSocket auth rejected - invalid jwt: {}", e.getMessage());
+            sendError(connection, "AUTH_FAILED", "Invalid or expired token");
+            return;
+        }
+
+        connection.updateAuthDetails(userId);
+
+        sendJson(connection, Map.of("type", "AUTH_OK", "userId", userId.toString()));
+        log.info("User {} authenticated via WebSocket", userId);
     }
 
     private void handleSend(WebSocketConnection connection, Envelope envelope) {
