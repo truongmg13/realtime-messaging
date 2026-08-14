@@ -31,6 +31,10 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MessageStatus status;
+
     @Column(nullable = false, updatable = false)
     private Instant sentAt;
 
@@ -39,6 +43,7 @@ public class Message {
     @PrePersist
     private void prePersist() {
         this.sentAt = Instant.now();
+        this.status = MessageStatus.SENT;
     }
 
 }

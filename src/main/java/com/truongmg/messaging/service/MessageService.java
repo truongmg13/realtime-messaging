@@ -2,6 +2,7 @@ package com.truongmg.messaging.service;
 
 import com.truongmg.messaging.exception.NotFoundException;
 import com.truongmg.messaging.model.Message;
+import com.truongmg.messaging.model.MessageStatus;
 import com.truongmg.messaging.model.User;
 import com.truongmg.messaging.repository.MessageRepository;
 import com.truongmg.messaging.repository.UserRepository;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -39,4 +41,12 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
+    @Transactional
+    public void markDelivered(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NotFoundException("Message not found: " + messageId));
+        message.setStatus(MessageStatus.DELIVERED);
+        message.setDeliveredAt(Instant.now());
+        messageRepository.save(message);
+    }
 }

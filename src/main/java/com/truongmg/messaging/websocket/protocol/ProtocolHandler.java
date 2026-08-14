@@ -74,7 +74,7 @@ public class ProtocolHandler {
         }
 
         // register session
-        WebSocketSession session = new WebSocketSession(userId);
+        WebSocketSession session = new WebSocketSession(userId, connection::send);
         sessionRegistry.register(userId, session);
         connection.updateAuthDetails(userId);
 
@@ -119,8 +119,8 @@ public class ProtocolHandler {
         messageRouting.route(message);
 
         // try to send to client first
-        Map<String, String> payload = Map.of("type", "MESSAGE", "content", message.getContent());
-        sendJson(connection, payload);
+//        Map<String, String> payload = Map.of("type", "MESSAGE", "content", message.getContent());
+//        sendJson(connection, payload);
 
     }
 
