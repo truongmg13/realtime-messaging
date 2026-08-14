@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,5 +49,10 @@ public class MessageService {
         message.setStatus(MessageStatus.DELIVERED);
         message.setDeliveredAt(Instant.now());
         messageRepository.save(message);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Message> getPendingMessages(UUID recipientId) {
+        return messageRepository.findByRecipientIdAndStatus(recipientId, MessageStatus.SENT);
     }
 }

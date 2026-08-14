@@ -22,7 +22,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MessageRouting {
+public class MessageRouter {
 
     private final SessionRegistry sessionRegistry;
     private final MessageService messageService;
@@ -42,7 +42,7 @@ public class MessageRouting {
     /**
      * Push a message to an already-located session and update its status
      */
-    private void deliverNow(WebSocketSession session, Message message) {
+    public void deliverNow(WebSocketSession session, Message message) {
         try {
             String json = buildMessageEnvelope(message);
             session.send(json);

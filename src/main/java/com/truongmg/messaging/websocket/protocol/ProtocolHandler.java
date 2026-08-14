@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truongmg.messaging.model.Message;
 import com.truongmg.messaging.security.JwtUtil;
 import com.truongmg.messaging.service.MessageService;
-import com.truongmg.messaging.websocket.routing.MessageRouting;
+import com.truongmg.messaging.websocket.routing.MessageRouter;
 import com.truongmg.messaging.websocket.session.SessionRegistry;
 import com.truongmg.messaging.websocket.session.WebSocketSession;
 import com.truongmg.messaging.websocket.server.WebSocketConnection;
@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class ProtocolHandler {
     private final JwtUtil jwtUtil;
     private final SessionRegistry sessionRegistry;
     private final MessageService messageService;
-    private final MessageRouting messageRouting;
+    private final MessageRouter messageRouter;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void handleMessage(WebSocketConnection connection, String json) {
@@ -78,6 +79,15 @@ public class ProtocolHandler {
         sessionRegistry.register(userId, session);
         connection.updateAuthDetails(userId);
 
+        // Flush messages sent while user was offline (in SENT state)
+        List<Message> pendingMessages = messageService.getPendingMessages(userId);
+        for (Message msg : pendingMessages) {
+            messageRouter.deliverNow(session, msg);
+        }
+        if (!pendingMessages.isEmpty()) {
+            log.info("Delivered {} pending messages to user {} on reconnect", pendingMessages.size(), userId);
+        }
+
         sendJson(connection, Map.of("type", "AUTH_OK", "userId", userId.toString()));
         log.info("User {} authenticated via WebSocket", userId);
     }
@@ -116,7 +126,7 @@ public class ProtocolHandler {
             return;
         }
 
-        messageRouting.route(message);
+        messageRouter.route(message);
 
         // try to send to client first
 //        Map<String, String> payload = Map.of("type", "MESSAGE", "content", message.getContent());
