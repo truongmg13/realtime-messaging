@@ -3,6 +3,7 @@ package com.truongmg.messaging.websocket.session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,5 +21,9 @@ public class SessionRegistry {
     public void register(UUID userId, WebSocketSession session) {
         sessions.put(userId, session);
         log.info("Session registered for user {}, total online: {}", userId, sessions.size());
+    }
+
+    public Optional<WebSocketSession> find(UUID userId) {
+        return Optional.ofNullable(sessions.get(userId));
     }
 }

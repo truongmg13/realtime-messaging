@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truongmg.messaging.model.Message;
 import com.truongmg.messaging.security.JwtUtil;
 import com.truongmg.messaging.service.MessageService;
+import com.truongmg.messaging.websocket.routing.MessageRouting;
 import com.truongmg.messaging.websocket.session.SessionRegistry;
 import com.truongmg.messaging.websocket.session.WebSocketSession;
 import com.truongmg.messaging.websocket.server.WebSocketConnection;
@@ -24,6 +25,7 @@ public class ProtocolHandler {
     private final JwtUtil jwtUtil;
     private final SessionRegistry sessionRegistry;
     private final MessageService messageService;
+    private final MessageRouting messageRouting;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void handleMessage(WebSocketConnection connection, String json) {
@@ -113,6 +115,8 @@ public class ProtocolHandler {
             sendError(connection, "SEND_FAILED", e.getMessage());
             return;
         }
+
+        messageRouting.route(message);
 
         // try to send to client first
         Map<String, String> payload = Map.of("type", "MESSAGE", "content", message.getContent());
