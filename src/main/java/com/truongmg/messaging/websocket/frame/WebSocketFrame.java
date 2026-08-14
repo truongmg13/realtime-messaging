@@ -9,8 +9,7 @@ import java.nio.charset.StandardCharsets;
 public record WebSocketFrame(boolean fin, int opcode, byte[] payload) {
 
     public static final int OP_TEXT = 0x1;
-    private static final int OP_CLOSE = 0x8;
-
+    public static final int OP_CLOSE = 0x8;
 
     public static WebSocketFrame text(String text) {
         return new WebSocketFrame(true, OP_TEXT, text.getBytes(StandardCharsets.UTF_8));

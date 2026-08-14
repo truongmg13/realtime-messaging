@@ -65,12 +65,20 @@ public class WebSocketConnection implements Runnable {
         }
     }
 
-    private void handleFrame(WebSocketFrame frame) {
+    private void handleFrame(WebSocketFrame frame) throws IOException {
         // Only support Text as of now
         switch (frame.opcode()) {
             case WebSocketFrame.OP_TEXT -> handleText(frame);
+            case WebSocketFrame.OP_CLOSE -> handleClose();
             default -> log.warn("unknown opcode ox{} from {}", Integer.toHexString(frame.opcode()), remoteAddr());
         }
+    }
+
+    private void handleClose() throws IOException {
+        log.info("Close frame from {}", remoteAddr());
+        // echo the close frame back per RFC 6455 section 5.5.1
+        sendFrame(WebSocketFrame.close(1000));
+        state = State.CLOSED;
     }
 
     private void handleText(WebSocketFrame frame) {
