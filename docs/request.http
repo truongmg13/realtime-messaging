@@ -1,0 +1,20 @@
+### Create 1st user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "password": "test12345678",
+  "displayName": "Alice"
+}
+
+### Create 2nd user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "password": "test12345678",
+  "displayName": "Bob"
+}
+
