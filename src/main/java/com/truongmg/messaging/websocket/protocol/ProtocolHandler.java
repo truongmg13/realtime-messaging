@@ -27,7 +27,7 @@ public class ProtocolHandler {
     private final SessionRegistry sessionRegistry;
     private final MessageService messageService;
     private final MessageRouter messageRouter;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public void handleMessage(WebSocketConnection connection, String json) {
         Envelope envelope;

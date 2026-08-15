@@ -18,7 +18,7 @@ public class GlobalExceptionController {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ErrorResponse> handleAppException(AppException e) {
-        log.debug("AppException: {} - {}", e.getStatus(), e.getMessage());
+        log.info("AppException: {} - {}", e.getStatus(), e.getMessage());
         return ResponseEntity
                 .status(e.getStatus())
                 .body(ErrorResponse.of(e.getStatus().name(), e.getMessage()));

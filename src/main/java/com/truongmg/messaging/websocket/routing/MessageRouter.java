@@ -26,7 +26,7 @@ public class MessageRouter {
 
     private final SessionRegistry sessionRegistry;
     private final MessageService messageService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     /**
      * Attempts live delivery. Called after the message is already persisted.
