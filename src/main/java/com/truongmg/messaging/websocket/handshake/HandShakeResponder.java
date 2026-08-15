@@ -41,7 +41,7 @@ public class HandShakeResponder {
         out.flush();
     }
 
-    private static String computeAcceptKey(String clientKey) {
+    public static String computeAcceptKey(String clientKey) {
         try {
             String combined = clientKey + GUID;
             MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
