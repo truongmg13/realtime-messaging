@@ -23,8 +23,9 @@ app:
     thread-pool-size: 100
     auth-timeout: 30000       # 10 seconds to send AUTH after connecting
   jwt:
-    secret: 1ZiyEkotDrIcq5q11m85Civ1CnwnB4SWpcm9PoNfFbU=
-    expiration-ms: 900000     # 15 mins to expire
+    # Generate with: openssl rand -based64 32
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}      # 15 mins to expire
 
 logging:
   level:
