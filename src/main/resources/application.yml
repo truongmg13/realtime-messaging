@@ -16,6 +16,11 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  # Multipart upload limits
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 app:
   websocket:
@@ -26,6 +31,9 @@ app:
     # Generate with: openssl rand -based64 32
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}      # 15 mins to expire
+  attachment:
+    upload-dir: ./uploads
+    max-file-size-bytes: 10485760   # 10 MB
 
 logging:
   level:
