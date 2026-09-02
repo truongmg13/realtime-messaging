@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>WebSocket Test Client</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Roboto, "Helvetica Neue", Arial; padding: 16px; max-width: 800px; }
+    #log { height: 300px; border: 1px solid #ddd; padding: 8px; overflow:auto; background:#f9f9f9; }
+    #status { margin-bottom: 8px; }
+    button { margin-left: 8px; }
+    input[type="text"] { width: 70%; }
+    .msg-in { color: #0b6623; }
+    .msg-out { color: #0b4c6a; }
+    .sys { color: #666; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket Test Client</h1>
+  <div id="status" class="sys">Status: <span id="state">DISCONNECTED</span></div>
+
+  <div>
+    <label>URL: <input id="url" type="text" value="ws://localhost:8081/ws"></label>
+    <button id="connect">Connect</button>
+    <button id="disconnect" disabled>Disconnect</button>
+  </div>
+
+  <div style="margin-top:12px;">
+    <label>Auth Token (optional): <input id="token" type="text" placeholder="Bearer token"></label>
+    <button id="auth" onclick="sendAuth()">Auth</button>
+  </div>
+
+  <div style="margin-top:12px;">
+    <input id="recipient" type="text" placeholder="Type recipient id">
+    <input id="message" type="text" placeholder="Type message to send">
+    <button id="send" disabled onclick="sendMessage()">Send</button>
+  </div>
+
+  <h3>Request Headers (RFC 6455)</h3>
+  <div id="headers" style="background:#f0f0f0; padding:8px; border-left:3px solid #0b4c6a; font-family:monospace; font-size:12px;"></div>
+
+  <h3>Log</h3>
+  <div id="log" aria-live="polite"></div>
+
+  <script>
+    let ws = null;
+    const stateEl = document.getElementById('state');
+    const urlEl = document.getElementById('url');
+    const tokenEl = document.getElementById('token');
+    const connectBtn = document.getElementById('connect');
+    const disconnectBtn = document.getElementById('disconnect');
+    const sendBtn = document.getElementById('send');
+    const msgEl = document.getElementById('message');
+    const recipientEl = document.getElementById('recipient');
+    const logEl = document.getElementById('log');
+    const headersEl = document.getElementById('headers');
+
+    function log(text, cls='sys') {
+      const d = document.createElement('div');
+      d.className = cls;
+      d.textContent = text;
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setState(s) {
+      stateEl.textContent = s;
+    }
+
+    function showHeaders(url, token) {
+      const headers = [
+        'GET ' + new URL(url).pathname + ' HTTP/1.1',
+        'Host: ' + new URL(url).host,
+        'Upgrade: websocket',
+        'Connection: Upgrade',
+        'Sec-WebSocket-Key: ' + btoa(Math.random().toString()).substring(0, 24),
+        'Sec-WebSocket-Version: 13',
+        'Origin: ' + window.location.origin,
+      ];
+      if (token) {
+        headers.push('Authorization: Bearer ' + token);
+      }
+      headersEl.textContent = headers.join('\n');
+    }
+
+    function connect() {
+      const url = urlEl.value.trim();
+      const token = tokenEl.value.trim();
+      if (!url) return log('Empty URL', 'sys');
+      
+      let wsUrl = url;
+      if (token) {
+        const sep = url.includes('?') ? '&' : '?';
+        wsUrl = url + sep + 'token=' + encodeURIComponent(token);
+      }
+      
+      showHeaders(url, token);
+      ws = new WebSocket(wsUrl);
+      setState('CONNECTING');
+      log('Connecting to ' + url + (token ? ' with auth token' : ''), 'sys');
+
+      ws.addEventListener('open', () => {
+        setState('OPEN');
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+        sendBtn.disabled = false;
+        log('✓ Connection opened (handshake successful)', 'sys');
+        log('ws state: ' + ws.readyState, 'sys');
+        log(WebSocket.OPEN, 'sys');
+      });
+
+      ws.addEventListener('message', (evt) => {
+        log('Received: ' + evt.data, 'msg-in');
+      });
+
+      ws.addEventListener('close', (evt) => {
+        setState('CLOSED');
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        sendBtn.disabled = true;
+        log('Connection closed (code=' + evt.code + ')', 'sys');
+      });
+
+      ws.addEventListener('error', (err) => {
+        log('✗ WebSocket error (check console)', 'sys');
+        console.error(err);
+      });
+    }
+
+    function disconnect() {
+      if (!ws) return;
+      ws.close();
+      ws = null;
+      setState('DISCONNECTED');
+      connectBtn.disabled = false;
+      disconnectBtn.disabled = true;
+      sendBtn.disabled = true;
+      log('Closed locally', 'sys');
+    }
+
+    function sendMessage() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return log('Not connected', 'sys');
+      }
+      const text = msgEl.value;
+      const recipient = recipientEl.value;
+      if (text === '' || recipient === '') return;
+      ws.send(JSON.stringify( {type: 'SEND', recipientId: recipient, content: text} ));
+      log('Sent: ' + text + ' to ' + recipient, 'msg-out');
+      msgEl.value = '';
+    }
+
+
+    function sendAuth() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return log('Not connected', 'sys');
+      }
+      const token = tokenEl.value;
+      if (token === '') return;
+      ws.send(JSON.stringify( {type: 'AUTH', token: token} ));
+      log('Sent: ' + token, 'msg-out');
+    }
+
+
+    connectBtn.addEventListener('click', connect);
+    disconnectBtn.addEventListener('click', disconnect);
+    sendBtn.addEventListener('click', sendMessage);
+    msgEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Show headers on load
+    window.addEventListener('load', () => {
+      showHeaders(urlEl.value, '');
+    });
+  </script>
+</body>
+</html>

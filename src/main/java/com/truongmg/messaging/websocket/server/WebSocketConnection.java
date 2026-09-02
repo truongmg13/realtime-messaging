@@ -66,9 +66,9 @@ public class WebSocketConnection implements Runnable {
     }
 
     private void handleFrame(WebSocketFrame frame) throws IOException {
-        // Only support Text as of now
         switch (frame.opcode()) {
             case WebSocketFrame.OP_TEXT -> handleText(frame);
+            case WebSocketFrame.OP_BINARY -> handleBinary(frame);
             case WebSocketFrame.OP_CLOSE -> handleClose();
             default -> log.warn("unknown opcode ox{} from {}", Integer.toHexString(frame.opcode()), remoteAddr());
         }
@@ -86,6 +86,12 @@ public class WebSocketConnection implements Runnable {
         String json = new String(frame.payload(), StandardCharsets.UTF_8);
         log.info("received text frame from {}: {}", remoteAddr(), json);
         protocolHandler.handleMessage(this, json);
+    }
+
+    private void handleBinary(WebSocketFrame frame) {
+        if (state == State.CLOSED) return;
+        log.info("received binary frame from {} ({} bytes)", remoteAddr(), frame.payload().length);
+
     }
 
     private void performHandshake() throws IOException {
