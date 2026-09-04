@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface AttachmentStorage {
     String store(InputStream in, UUID id, String filename) throws IOException;
+
+    void delete(String storagePath) throws IOException;
 }

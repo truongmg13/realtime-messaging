@@ -18,9 +18,9 @@ public class LocalAttachmentStorage implements AttachmentStorage {
 
     private final Path rootLocation;
 
-    public LocalAttachmentStorage(@Value("{app.attachment.upload-dir:./uploads}") String uploadDir) throws IOException {
+    public LocalAttachmentStorage(@Value("${app.attachment.upload-dir:./uploads}") String uploadDir) throws IOException {
         this.rootLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectory(this.rootLocation);
+        Files.createDirectories(this.rootLocation);
         log.info("Attachment storage initialized at {}", this.rootLocation);
     }
 
@@ -32,6 +32,15 @@ public class LocalAttachmentStorage implements AttachmentStorage {
         Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         log.debug("Stored attachment {} at {}", storedFilename, target);
         return storedFilename;
+    }
+
+    @Override
+    public void delete(String storagePath) throws IOException {
+        Path target = rootLocation.resolve(storagePath);
+        boolean deleted = Files.deleteIfExists(target);
+        if (deleted) {
+            log.debug("Deleted attachment at {}", target);
+        }
     }
 
     private String extractExtension(String filename) {

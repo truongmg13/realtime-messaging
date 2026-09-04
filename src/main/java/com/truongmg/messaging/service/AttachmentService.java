@@ -32,18 +32,36 @@ public class AttachmentService {
         validateFile(file);
 
         UUID storageId = UUID.randomUUID();
-        String filename = sanitise(file.getOriginalFilename());
+        String originalFilename = sanitise(file.getOriginalFilename());
         String storagePath;
         try {
-            storagePath = attachmentStorage.store(file.getInputStream(), storageId, filename);
+            storagePath = attachmentStorage.store(file.getInputStream(), storageId, originalFilename);
+            log.info("Stored attachment {} at {}", originalFilename, storagePath);
         } catch (IOException e) {
-            log.error("Failed to store attachment {}: {}", filename, e.getMessage(), e);
+            log.error("Failed to store attachment {}: {}", originalFilename, e.getMessage(), e);
             throw new RuntimeException("File storage failed - please try again", e);
         }
 
+        Attachment attachment = new Attachment();
+        attachment.setId(storageId);
+        attachment.setUploadId(UUID.randomUUID()); // TODO: to use uploadID
+        attachment.setOriginalFilename(originalFilename);
+        attachment.setContentType(file.getContentType());
+        attachment.setSizeBytes(file.getSize());
+        attachment.setStoragePath(storagePath);
 
 
-        return null;
+        try {
+            attachmentRepository.save(attachment);
+        } catch (Exception e) {
+            // compensating action: remove the orphaned file
+            try { attachmentStorage.delete(storagePath); } catch (IOException ex) {
+                log.error("Failed to delete orphaned file {}: {}", storagePath, ex.getMessage(), ex);
+            }
+            throw e;
+        }
+
+        return attachment;
     }
 
     private String sanitise(@Nullable String fileName) {
