@@ -1,5 +1,6 @@
 package com.truongmg.messaging.service;
 
+import com.truongmg.messaging.dto.AttachmentResponse;
 import com.truongmg.messaging.exception.BadRequestException;
 import com.truongmg.messaging.model.Attachment;
 import com.truongmg.messaging.repository.AttachmentRepository;
@@ -28,7 +29,7 @@ public class AttachmentService {
     private final AttachmentRepository attachmentRepository;
     private final AttachmentStorage attachmentStorage;
 
-    public Attachment upload(MultipartFile file) {
+    public AttachmentResponse upload(MultipartFile file, UUID uploaderId) {
         validateFile(file);
 
         UUID storageId = UUID.randomUUID();
@@ -44,7 +45,7 @@ public class AttachmentService {
 
         Attachment attachment = new Attachment();
         attachment.setId(storageId);
-        attachment.setUploadId(UUID.randomUUID()); // TODO: to use uploadID
+        attachment.setUploadId(uploaderId);
         attachment.setOriginalFilename(originalFilename);
         attachment.setContentType(file.getContentType());
         attachment.setSizeBytes(file.getSize());
@@ -61,7 +62,18 @@ public class AttachmentService {
             throw e;
         }
 
-        return attachment;
+        return buildResponse(attachment);
+    }
+
+    private AttachmentResponse buildResponse(Attachment attachment) {
+        return new AttachmentResponse(
+                attachment.getId(),
+                attachment.getOriginalFilename(),
+                attachment.getContentType(),
+                attachment.getSizeBytes(),
+                attachment.getStoragePath(),
+                attachment.getUploadedAt()
+        );
     }
 
     private String sanitise(@Nullable String fileName) {

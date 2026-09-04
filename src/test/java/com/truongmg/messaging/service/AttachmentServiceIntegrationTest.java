@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,10 +37,11 @@ class AttachmentServiceIntegrationTest {
 
     @Test
     void upload_validFile_writesFileToDiskViaRealSpringContext() throws IOException {
+        UUID uploaderId = UUID.randomUUID();
         byte[] content = "hello world".getBytes();
         MockMultipartFile file = new MockMultipartFile("file", "greeting.png", "image/png", content);
 
-        attachmentService.upload(file);
+        attachmentService.upload(file, uploaderId);
 
         try (Stream<Path> files = Files.list(uploadDir)) {
             List<Path> stored = files.toList();

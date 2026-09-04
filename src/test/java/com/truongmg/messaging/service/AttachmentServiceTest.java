@@ -32,11 +32,13 @@ class AttachmentServiceTest {
     @Mock private AttachmentStorage attachmentStorage;
 
     private AttachmentService attachmentService;
+    private UUID uploaderId;
 
     @BeforeEach
     void setUp() {
         attachmentService = new AttachmentService(attachmentRepository, attachmentStorage);
         ReflectionTestUtils.setField(attachmentService, "maxFileSizeBytes", MAX_FILE_SIZE_BYTES);
+        uploaderId = UUID.randomUUID();
     }
 
     @Test
@@ -45,7 +47,7 @@ class AttachmentServiceTest {
                 "file", "photo.png", "image/png", "content".getBytes());
         when(attachmentStorage.store(any(), any(), eq("photo.png"))).thenReturn("/uploads/some-path");
 
-        attachmentService.upload(file);
+        attachmentService.upload(file, uploaderId);
 
         ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
         verify(attachmentStorage).store(any(), idCaptor.capture(), eq("photo.png"));
@@ -54,7 +56,7 @@ class AttachmentServiceTest {
 
     @Test
     void upload_nullFile_throwsBadRequestWithoutStoring() {
-        assertThatThrownBy(() -> attachmentService.upload(null))
+        assertThatThrownBy(() -> attachmentService.upload(null, uploaderId))
                 .isInstanceOf(BadRequestException.class);
 
         verifyNoInteractions(attachmentStorage);
@@ -64,7 +66,7 @@ class AttachmentServiceTest {
     void upload_emptyFile_throwsBadRequestWithoutStoring() {
         MockMultipartFile file = new MockMultipartFile("file", "empty.png", "image/png", new byte[0]);
 
-        assertThatThrownBy(() -> attachmentService.upload(file))
+        assertThatThrownBy(() -> attachmentService.upload(file, uploaderId))
                 .isInstanceOf(BadRequestException.class);
 
         verifyNoInteractions(attachmentStorage);
@@ -75,7 +77,7 @@ class AttachmentServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "big.png", "image/png", new byte[(int) MAX_FILE_SIZE_BYTES + 1]);
 
-        assertThatThrownBy(() -> attachmentService.upload(file))
+        assertThatThrownBy(() -> attachmentService.upload(file, uploaderId))
                 .isInstanceOf(BadRequestException.class);
 
         verifyNoInteractions(attachmentStorage);
@@ -86,7 +88,7 @@ class AttachmentServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "script.js", "application/javascript", "content".getBytes());
 
-        assertThatThrownBy(() -> attachmentService.upload(file))
+        assertThatThrownBy(() -> attachmentService.upload(file, uploaderId))
                 .isInstanceOf(BadRequestException.class);
 
         verifyNoInteractions(attachmentStorage);
@@ -99,7 +101,7 @@ class AttachmentServiceTest {
         when(attachmentStorage.store(any(), any(), eq("photo.png")))
                 .thenThrow(new IOException("disk full"));
 
-        assertThatThrownBy(() -> attachmentService.upload(file))
+        assertThatThrownBy(() -> attachmentService.upload(file, uploaderId))
                 .isInstanceOf(RuntimeException.class)
                 .hasCauseInstanceOf(IOException.class);
     }
