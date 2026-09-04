@@ -17,6 +17,7 @@ import java.util.UUID;
 public class UserService {
 
     private static final int MAX_RESULTS = 50;
+    private static final int TOP_USERS_LIMIT = 20;
 
     private final UserRepository userRepository;
 
@@ -28,6 +29,15 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(0, Math.clamp(limit, 1, MAX_RESULTS));
         return userRepository.search(query.trim(), currentUserId, pageable)
+                .stream()
+                .map(UserResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> topUsers(UUID currentUserId) {
+        Pageable pageable = PageRequest.of(0, TOP_USERS_LIMIT);
+        return userRepository.findByIdNotOrderByCreatedAtDesc(currentUserId, pageable)
                 .stream()
                 .map(UserResponse::from)
                 .toList();

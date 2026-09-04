@@ -27,4 +27,9 @@ public class UserController {
         return userService.search(userId, query, limit);
     }
 
+    @GetMapping
+    public List<UserResponse> users(@AuthenticationPrincipal UUID userId) {
+        return userService.topUsers(userId);
+    }
+
 }

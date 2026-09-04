@@ -27,4 +27,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
         ORDER BY u.username ASC
         """)
     List<User> search(@Param("query") String query, @Param("excludeUserId") UUID excludeUserId, Pageable pageable);
+
+    List<User> findByIdNotOrderByCreatedAtDesc(UUID excludeUserId, Pageable pageable);
 }
