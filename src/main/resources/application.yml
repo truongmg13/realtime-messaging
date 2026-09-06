@@ -31,9 +31,6 @@ app:
     # Generate with: openssl rand -based64 32
     secret: ${JWT_SECRET:1ZiyEkotDrIcq5q11m85Civ1CnwnB4SWpcm9PoNfFbU\=}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}      # 15 mins to expire
-  attachment:
-    upload-dir: ./uploads
-    max-file-size-bytes: 10485760   # 10 MB
 
 logging:
   level:
