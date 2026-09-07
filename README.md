@@ -132,3 +132,5 @@ Connect to `ws://localhost:8081` with any standard WebSocket client. The first m
 - [ ] Add HTTPS / WSS via a reverse proxy (nginx) in front of both ports
 - [ ] For multi-node: replace `SessionRegistry` with Redis pub/sub routing
 - [ ] Tune `app.websocket.thread-pool-size` based on expected concurrent users
+
+src/main/java/com/truongmg/messaging/storage/

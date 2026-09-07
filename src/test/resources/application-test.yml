@@ -1,0 +1,18 @@
+# Overrides applied on top of src/main/resources/application.yml for the "test" profile
+# (@ActiveProfiles("test")). Only values that need to differ from the main config live here.
+spring:
+  datasource:
+    # Unique per context so multiple @SpringBootTest classes (each its own ApplicationContext,
+    # since they use different config) don't share/reset the same in-memory schema.
+    url: jdbc:h2:mem:testdb-${random.uuid};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+
+app:
+  jwt:
+    # Fixed test-only signing key so tests don't require a real JWT_SECRET env var.
+    secret: yeI7SFSCNfsU3JtfgTfdthSaZ3AdHAWOtRat/+VWz3w=
+  websocket:
+    # 0 = let the OS pick a free ephemeral port, avoiding clashes between test contexts
+    # or with a locally running dev server on the default 8081.
+    port: 0
+  attachment:
+    upload-dir: ./target/test-uploads

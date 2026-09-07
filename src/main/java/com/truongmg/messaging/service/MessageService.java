@@ -1,5 +1,7 @@
 package com.truongmg.messaging.service;
 
+import com.truongmg.messaging.dto.ConversationPageResponse;
+import com.truongmg.messaging.dto.MessageResponse;
 import com.truongmg.messaging.exception.NotFoundException;
 import com.truongmg.messaging.model.Message;
 import com.truongmg.messaging.model.MessageStatus;
@@ -8,6 +10,10 @@ import com.truongmg.messaging.repository.MessageRepository;
 import com.truongmg.messaging.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,5 +60,24 @@ public class MessageService {
     @Transactional(readOnly = true)
     public List<Message> getPendingMessages(UUID recipientId) {
         return messageRepository.findByRecipientIdAndStatus(recipientId, MessageStatus.SENT);
+    }
+
+    /**
+     * Paginated message history between two users, newest first.
+     */
+    @Transactional(readOnly = true)
+    public ConversationPageResponse getConversation(UUID userId, UUID otherUserId, int page, int size) {
+        if (!userRepository.existsById(otherUserId)) {
+            throw new NotFoundException("User not found: " + otherUserId);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "sentAt"));
+        Page<Message> result = messageRepository.findConversation(userId, otherUserId, pageable);
+
+        List<MessageResponse> messages = result.getContent().stream()
+                .map(MessageResponse::from)
+                .toList();
+
+        return new ConversationPageResponse(messages, page, size, result.getTotalElements(), result.hasNext());
     }
 }

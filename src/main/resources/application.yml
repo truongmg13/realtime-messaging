@@ -16,6 +16,11 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  # Multipart upload limits
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 app:
   websocket:
@@ -24,7 +29,7 @@ app:
     auth-timeout: 30000       # 10 seconds to send AUTH after connecting
   jwt:
     # Generate with: openssl rand -based64 32
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:1ZiyEkotDrIcq5q11m85Civ1CnwnB4SWpcm9PoNfFbU\=}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}      # 15 mins to expire
 
 logging:
